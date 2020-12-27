@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AlertController } from '@ionic/angular';
 import { Recipe } from '../recipes.model';
 import { RecipesService } from '../recipes.service';
 
@@ -13,17 +14,43 @@ export class RecipeDetailPage implements OnInit {
   loadedRecipe: Recipe;
 
   constructor(private activatedRoute: ActivatedRoute,
-              private recipesService: RecipesService) { }
+              private recipesService: RecipesService,
+              private router: Router,
+              private alertCtrl: AlertController) { }
 
   ngOnInit() {
     this.activatedRoute.paramMap.subscribe(paramMap => {
       if (!paramMap.has('recipeId')) {
         //redirect user? Why?
+        this.router.navigate(['/recipes']);
         return;
       }
       const recipeId = paramMap.get('recipeId');
       this.loadedRecipe = this.recipesService.getRecipe(+recipeId);
     })
+  }
+
+  onDeleteRecipe(id: number) {
+
+    this.alertCtrl.create(
+      {backdropDismiss:true, 
+      header: 'Warning', 
+      message: 'Are you sure you want to delete this recipe?', 
+      buttons: [{
+        text: 'Cancel',
+        role: 'cancel'
+    },
+      {
+        text: 'Delete',
+        handler: () => {
+          //nav away
+          this.router.navigate(['/recipes']);
+          this.recipesService.deleteRecipe(id);
+        }
+      }
+  ]}).then(alertEl => {
+    alertEl.present();
+  })
   }
 
 }
